@@ -14,11 +14,14 @@ io.on('connection', function(socket){
     console.log('user disconnected');
   });
 
-  //chat msg  
+  //broadcast chat msg  
   socket.on('chat message', function(msg){
     console.log('message: ' + msg);
-    io.emit('chat message', msg);
+    io.broadcast.emit('chat message', msg);
   });
+
+  //private message
+
 });
 
 http.listen(3000, function(){
