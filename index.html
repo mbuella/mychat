@@ -30,10 +30,13 @@
       box-shadow: none;
     }
 
-    #msg-board .panel .alert {
-      /*min-width: 25%;*/
-      max-width: 70%;
+    .msg {
       overflow-wrap: normal;
+      width: 45%;
+    }
+
+    #msg-board .panel .alert {
+      max-width: 45%;
     }
 
   </style>
@@ -42,25 +45,7 @@
 <body>
   <div class="container-fluid">
     <div class="row" id="msg-board" style="">
-        <div class="panel">
-
-<!--             
-            <div class="my-msg">
-              <div class="alert alert-info" style="width: 25%">
-                Hi!
-              </div>
-              <div class="clearfix"></div>              
-            </div>
-
-            <div class="his-msg">
-              <div class="alert alert-warning" style="width: 25%">
-                Hello :)
-              </div>              
-            </div>
-
- -->
-
-        </div>
+        <div class="panel"></div>
     </div>
     <div class="row" style="
     bottom: 0;
@@ -95,10 +80,10 @@
           if(msg_txt.trim().length < 1)
             return false;
           //send msg to server
-          //socket.emit('chat message', $('#m').val());
-          //create a right callout for the message
+          socket.emit('chat message', msg_txt);
+          //create a right-pos callout for the message
           $('#msg-board .panel').append(
-            $('<div>').addClass('msg')
+            $('<div>').addClass('my-msg')
                       .append(
                         $('<div>').addClass('alert alert-info pull-right')
                                   .text(msg_txt)
@@ -106,7 +91,7 @@
                       .append($('<div>').addClass('clearfix'))
           );
 
-          var msg = document.querySelectorAll('.msg');
+          var msg = document.querySelectorAll('#msg-board .panel .alert');
 
           //scroll to new message
           msg[msg.length-1].scrollIntoView({ 
@@ -120,7 +105,23 @@
         });
 
         socket.on('chat message', function(msg){
-          $('#messages').append($('<li>').text(msg));
+          //create a left-pos callout for the message
+          $('#msg-board .panel').append(
+            $('<div>').addClass('his-msg')
+                      .append(
+                        $('<div>').addClass('alert alert-warning pull-left')
+                                  .text(msg)
+                      )
+                      .append($('<div>').addClass('clearfix'))
+          );
+
+          var msg = document.querySelectorAll('#msg-board .panel .alert');
+
+          //scroll to new message
+          msg[msg.length-1].scrollIntoView({ 
+            behavior: 'smooth' 
+          });
+          
         });
 
       });

@@ -17,7 +17,7 @@ io.on('connection', function(socket){
   //broadcast chat msg  
   socket.on('chat message', function(msg){
     console.log('message: ' + msg);
-    io.broadcast.emit('chat message', msg);
+    socket.broadcast.emit('chat message', msg);
   });
 
   //private message
