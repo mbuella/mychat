@@ -1,0 +1,66 @@
+#msg-board {
+    top: 0;
+    height: 90%;
+    width: 100%;
+    position: fixed;   
+    overflow-y: auto;
+}
+
+#msg-board .panel {
+  /*height: 96%;*/
+  padding: 20px;
+  box-shadow: none;
+}
+
+.msg {
+  overflow-wrap: normal;
+  width: 45%;
+}
+
+#msg-board .panel .alert {
+  max-width: 45%;
+  overflow-wrap: break-word;
+}
+
+.member-info {
+  font-style: italic;
+  color: gray;
+  margin-bottom: 15px;
+}
+
+#msg-input {      
+  bottom: 0;
+  width: 100%;
+  position: fixed;
+}
+
+#msg-box,
+#msg-form button {
+  width: 100%;
+  height: 50px;
+}
+
+#msg-form > div {
+  padding: 0;
+}
+
+.cn-id {
+  margin-right: 10px;
+}
+
+
+/*Tablet view styles*/
+@media only screen and (max-width: 992px){
+
+
+  
+}
+
+/*Mobile view styles*/
+@media only screen and (max-width: 768px){
+
+#msg-board .panel .alert {
+    max-width: 75%;
+}
+
+}
