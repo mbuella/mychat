@@ -10,13 +10,14 @@
         integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u"
         crossorigin="anonymous">
   <!-- jQuery -->
-  <script src="https://code.jquery.com/jquery-3.2.1.slim.js"></script>
+  <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
   <!-- Bootstrap JS -->
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"
           integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa"
           crossorigin="anonymous"></script>
   <!-- Socket.IO -->
   <script src="/socket.io/socket.io.js"></script>
+  <link rel="stylesheet" type="text/css" href="css/loading.css">
   <style>
     #msg-board {
         top: 0;
@@ -56,17 +57,13 @@
 <body>
   <div class="container-fluid">
     <div class="row" id="msg-board" style="">
-        <div class="panel">
-          <!-- <div class="text-center member-info">Welcome to the group, 
-            <strong>Marlon</strong>!
-          </div> -->
-        </div>
+        <div class="panel"></div>
     </div>
     <div class="row" style="
     bottom: 0;
     width: 100%;
     position: fixed;">
-        <form>
+        <form id="msg-form">
           <div class="col-md-11 col-sm-11 col-xs-9" style="padding: 0">
             <input type="text"
                    class="form-control"
@@ -92,15 +89,14 @@
   <div class="modal-dialog modal-lg">   
     <div class="modal-content">
       <div class="modal-header">
-        <h3>Please enter your Codename:</h3>
+        <h3>Please enter your Codename and press <code>Enter</code>:</h3>
       </div>
       <div class="modal-body">
-        <input type="text"
-        class="form-control"
-        id='codename'>
-      </div>
-      <div class="modal-footer">
-        <button class="btn btn-primary" id="start-chat">Start chat</button>
+        <form id="codename-form">
+          <input type="text"
+            class="form-control"
+            id='codename'>          
+        </form>
       </div>
     </div>
   </div>
@@ -110,41 +106,40 @@
     
       $(function () {
 
+        var codename = '';
+        var typing = false;
+        var timeout = undefined;
+        var currMsgs = {};
+
+        //select name input
+        $('#codename').focus();
+
         //open modal on load
         $('#infoModal').modal('show');
 
-        var socket = io();
-        var codename = '';
-
-        $('#start-chat').on('click',function(){
+        $('#codename-form').on('submit',function(e){
+          e.preventDefault();
 
           codename = $('#codename').val();
           if(codename.trim().length < 1)
             return false;
 
-          socket.emit('chat intro', codename);
 
-          $('#msg-board .panel').append(
-            $('<div>').addClass('text-center member-info')
-                .text('Welcome to the group, ')
-                .append($('<strong>').text(codename))
-                .append('!')
-          );
-
-          $('#infoModal').modal('hide');
+          /*** FORM LISTENERS ***/
 
           // listener for form
-          $('form').submit(function(e){
+          $('#msg-form').submit(function(e){
             e.preventDefault();
 
             var msg_txt = $('#msg-box').val();
             if(msg_txt.trim().length < 1)
-              return false;
+            return false;
+
             //send msg to server
             socket.emit('chat message', msg_txt);
-            //create a right-pos callout for the message
-            $('#msg-board .panel').append(
-              $('<div>').addClass('my-msg')
+
+            //
+            var myMsg = $('<div>').addClass('my-msg')
                         .append(
                           $('<div>').addClass('alert alert-info pull-right')
                                     .append(
@@ -153,43 +148,60 @@
                                     )
                                     .append(msg_txt)
                         )
-                        .append($('<div>').addClass('clearfix'))
-            );
+                        .append($('<div>').addClass('clearfix'));
 
+            //create a right-pos callout for the message
+            $('#msg-board .panel').append(myMsg);
 
-            var msgs = document.querySelectorAll('#msg-board .panel .alert');
-
-            //scroll to new message
-            msgs[msgs.length-1].scrollIntoView({ 
-              behavior: 'smooth' 
-            });
+            scrollToMsg(myMsg);
             
             //empty the input
             $('#msg-box').val('');
+            //blur and focus to restart typing
+            $('#msg-box').blur().focus();
+
           });
+
+          //typing member inform server
+          $('#msg-box').on('keyup keypress',function(){
+
+            if(!typing && $('#msg-box').val().length > 0) {
+              typing = true;
+              //send info to server
+              socket.emit('chat typing',true);  
+            }
+            else {
+              clearTimeout(timeout);
+            }
+
+            timeout = setTimeout(
+              function() {
+                typing = false;
+                socket.emit('chat typing',false);              
+              },5000
+            );
+
+          });
+
+          $('#msg-box').on('focusout',function(){
+              socket.emit('chat typing',false);                
+              typing = false;
+          });
+
+
+          /*** SOCKETS LISTENERS ***/
+
+          var socket = io();
 
           //messages listener
           socket.on('chat message', function(msg){
-            //create a left-pos callout for the message
-            $('#msg-board .panel').append(
-              $('<div>').addClass('his-msg')
-                        .append(
-                          $('<div>').addClass('alert alert-warning pull-left')
-                                    .append(
-                                      $('<div>').addClass('label label-default cn-id')
-                                        .text(msg.cn)
-                                    )
-                                    .append(msg.text)
-                        )
-                        .append($('<div>').addClass('clearfix'))
-            );
+            // just replace the loading placeholder with the new message
+            currMsgs[msg.cn].find('.loading').replaceWith(msg.text);
 
-            var msgs = document.querySelectorAll('#msg-board .panel .alert');
+            //remember to delete
+            delete currMsgs[msg.cn];
 
-            //scroll to new message
-            msgs[msgs.length-1].scrollIntoView({ 
-              behavior: 'smooth' 
-            });
+            scrollToMsg(currMsgs[msg.cn]);
           });
 
           //new joiners listener
@@ -199,7 +211,70 @@
                   .html($('<strong>').text(codename))
                   .append(' has joined the chat.')
               );            
-          });            
+          });
+
+          //typing member listener
+          socket.on('chat typing',function(member){
+            if (!member.typing) {
+                //remove the message
+                console.log('not typing')
+                if(member.cn in currMsgs)
+                  currMsgs[member.cn].remove();
+            }
+            else {
+              currMsgs[member.cn] = $('<div>').addClass('his-msg')
+                    .append(
+                      $('<div>').addClass('alert alert-warning pull-left')
+                                .append(
+                                  $('<div>').addClass('label label-default cn-id')
+                                    .text(member.cn)
+                                )
+                                .append(
+                                  $('<span>').addClass('loading')
+                                )
+                    )
+                    .append($('<div>').addClass('clearfix'));
+
+              $('#msg-board .panel').append(currMsgs[member.cn]);
+            }
+
+          });
+
+          //members who leave listener
+          socket.on('chat leave', function(codename){
+              $('#msg-board .panel').append(
+                $('<div>').addClass('text-center member-info')
+                  .html($('<strong>').text(codename))
+                  .append(' has left the chat.')
+              );            
+          });
+
+
+          /*** CUSTOM FUNCTIONS ***/
+
+          //scrolldown function
+          function scrollToMsg(target) {  
+            $('#msg-board').animate({
+              scrollTop: $('#msg-board').prop("scrollHeight")
+            }, 2000);
+          }
+
+
+          /*** EXECUTION STARTS HERE ***/
+
+          socket.emit('chat intro', codename);
+
+          $('#infoModal').modal('hide');
+
+          //greeting to the user
+          $('#msg-board .panel').append(
+            $('<div>').addClass('text-center member-info')
+                .text('Welcome to the group, ')
+                .append($('<strong>').text(codename))
+                .append('!')
+          );
+
+          $('#msg-box').focus();
 
         });
       });
