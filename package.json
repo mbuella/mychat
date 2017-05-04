@@ -1,7 +1,8 @@
 {
-  "name": "mychat",
+  "name": "OpenChat",
   "version": "0.0.1",
-  "description": "my first socket.io chat app",
+  "description": "Open source room-based public chat app powered by NodeJS and Socket.IO",
+  "repository": "https://mbuella@gitlab.com/chatph/openchat.git",
   "engines": {
     "node": "6.10.2"
   },
@@ -9,7 +10,9 @@
     "start": "node index.js"
   },
   "dependencies": {
+    "bootstrap": "^3.3.7",
     "express": "^4.15.2",
+    "jquery": "^3.2.1",
     "socket.io": "^1.7.3"
   }
 }
