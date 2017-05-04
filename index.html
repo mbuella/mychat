@@ -5,14 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta charset="utf-8">
   <!-- Bootstrap -->
-  <!-- <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" -->
   <link href="css/bootstrap.min.css"
         rel="stylesheet">
+  <!-- Font Awesome! -->
+  <link href="css/font-awesome.min.css"
+        rel="stylesheet">
   <!-- jQuery -->
-  <!-- <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script> -->
   <script src="js/jquery.min.js"></script>
   <!-- Bootstrap JS -->
-  <!-- <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" -->
   <script src="js/bootstrap.min.js"></script>
   <!-- Socket.IO -->
   <script src="/socket.io/socket.io.js"></script>
@@ -26,7 +26,10 @@
 
 <body>
   <div class="container-fluid">
-    <div class="row" id="msg-board" style="">
+    <div id="room-tag">
+      <h1>OpenChat</h1>
+    </div>
+    <div class="row" id="msg-board">
         <div class="panel"></div>
     </div>
     <div class="row" id="msg-input">
@@ -54,14 +57,51 @@
   <div class="modal-dialog modal-lg">   
     <div class="modal-content">
       <div class="modal-header">
-        <h3>Please enter your Codename and press <code>Enter</code>:</h3>
+        <h2 class="text-center">Welcome to OpenChat!</h2>
       </div>
       <div class="modal-body">
         <form id="codename-form">
-          <input type="text"
-            class="form-control"
-            id='codename'>          
+          <div class="form-group">
+            <label for="codename">
+              <h4>Please enter your codename</h4>
+            </label>
+            <input type="text"
+              class="form-control"
+              id='codename'>      
+          </div>
+          <div class="form-group">
+            <label for="topic">
+              <h4>and indicate your favorite topic then press <code>Enter</code>!</h4>
+            </label>
+            <input type="text"
+              class="form-control"
+              id="topic">
+          </div>
+          <!-- <input type="submit" value="Start Chat"> -->
         </form>
+      </div>
+      <div class="modal-footer">
+        <div class="row">
+          <div class="col-sm-6 col-xs-12">
+            <div id="copyright">
+              2017 &copy; OpenChat  
+            </div>            
+          </div>
+          <div class="col-sm-6 col-xs-12">
+            <div id="icons">
+              <a href="https://gitlab.com/chatph/openchat/" title="OpenChat on Gitlab" 
+                target="_blank">
+                <i class="fa fa-gitlab fa-2x"></i>            
+              </a>
+              <span disabled title="Coming Soon!">
+                <i class="fa fa-twitter fa-2x"></i>            
+              </span>
+              <span disabled title="Coming Soon!">
+                <i class="fa fa-instagram fa-2x"></i>            
+              </span>
+            </div>            
+          </div>
+        </div>         
       </div>
     </div>
   </div>

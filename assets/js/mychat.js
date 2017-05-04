@@ -5,18 +5,34 @@ $(function () {
   var timeout = undefined;
   var currMsgs = {};
 
-  //select name input
-  $('#codename').focus();
+  var socket = io('/public-chat');
 
   //open modal on load
   $('#infoModal').modal('show');
+
+  //select name input
+  $('#codename').focus();
+
+  //we need to listen for <enter> keypress
+  //since we have multiple inputs and submitting
+  //our form by <enter> will not work anymore.
+  $("#codename-form input").keypress(function(event) {
+    if (event.which == 13) {
+        event.preventDefault();
+        $('#codename-form').submit();
+    }
+  });
 
   $('#codename-form').on('submit',function(e){
     e.preventDefault();
 
     codename = $('#codename').val();
-    if(codename.trim().length < 1)
+    topic = $('#topic').val();
+
+    if(codename.trim().length < 1 ||
+      topic.trim().length < 1)
       return false;
+
 
 
     /*** FORM LISTENERS ***/
@@ -27,10 +43,10 @@ $(function () {
 
       var msg_txt = $('#msg-box').val();
       if(msg_txt.trim().length < 1)
-      return false;
+        return false;
 
       //send msg to server
-      socket.emit('chat message', msg_txt);
+      socket.emit('room message', msg_txt);
 
       //
       var myMsg = $('<div>').addClass('my-msg')
@@ -62,7 +78,7 @@ $(function () {
       if(!typing && $('#msg-box').val().length > 0) {
         typing = true;
         //send info to server
-        socket.emit('chat typing',true);  
+        socket.emit('room typing',true);  
       }
       else {
         clearTimeout(timeout);
@@ -71,14 +87,14 @@ $(function () {
       timeout = setTimeout(
         function() {
           typing = false;
-          socket.emit('chat typing',false);              
+          socket.emit('room typing',false);  
         },5000
       );
 
     });
 
     $('#msg-box').on('focusout',function(){
-        socket.emit('chat typing',false);                
+        socket.emit('room typing',false);  
         typing = false;
     });
 
@@ -90,10 +106,30 @@ $(function () {
 
     /*** SOCKETS LISTENERS ***/
 
-    var socket = io();
+    var socket = io('/public-chat');
+
+    //room name listener
+    socket.on('room name',function(room){      
+      $('#room-tag > h1').text(room);
+
+      //greeting to the user
+      $('#msg-board .panel').append(
+        $('<em>').append(
+          $('<div>').addClass('text-center member-info')
+              .html('Welcome to OpenChat, ')
+              .append($('<strong>').text(codename))
+              .append('! <br>You are now part of the ')
+              .append($('<strong>').text(room))
+              .append(' room.')
+        )
+      );
+
+      console.log(codename + ' ' + room);
+      
+    });
 
     //messages listener
-    socket.on('chat message', function(msg){
+    socket.on('room message', function(msg){
       // just replace the loading placeholder with the new message
       currMsgs[msg.cn].find('.loading').replaceWith(msg.text);
 
@@ -104,7 +140,7 @@ $(function () {
     });
 
     //new joiners listener
-    socket.on('chat intro', function(codename){
+    socket.on('room join', function(codename){
         $('#msg-board .panel').append(
           $('<em>').append(
             $('<div>').addClass('text-center member-info')
@@ -115,10 +151,9 @@ $(function () {
     });
 
     //typing member listener
-    socket.on('chat typing',function(member){
+    socket.on('room typing',function(member){
       if (!member.typing) {
           //remove the message
-          console.log('not typing')
           if(member.cn in currMsgs)
             currMsgs[member.cn].remove();
       }
@@ -142,7 +177,7 @@ $(function () {
     });
 
     //members who is disconnected listener
-    socket.on('chat disconnect', function(codename){
+    socket.on('room disconnect', function(codename){
         $('#msg-board .panel').append(
           $('<em>').append(
             $('<div>').addClass('text-center member-info')
@@ -153,7 +188,7 @@ $(function () {
     });
 
     //members who leave listener
-    socket.on('chat leave', function(){
+/*    socket.on('chat leave', function(){
         $('#msg-board .panel').append(
           $('<em>').append(
             $('<div>').addClass('text-center member-info')
@@ -161,7 +196,7 @@ $(function () {
               .append(' has left the chat.')
           )
         );
-    });
+    });*/
 
 
     /*** CUSTOM FUNCTIONS ***/
@@ -176,19 +211,13 @@ $(function () {
 
     /*** EXECUTION STARTS HERE ***/
 
-    socket.emit('chat intro', codename);
+    //join the requested room
+    socket.emit('room join', {
+      'cn': codename,
+      'room': topic
+    });
 
     $('#infoModal').modal('hide');
-
-    //greeting to the user
-    $('#msg-board .panel').append(
-      $('<em>').append(
-        $('<div>').addClass('text-center member-info')
-            .text('Welcome to the group, ')
-            .append($('<strong>').text(codename))
-            .append('!')        
-      )
-    );
 
     $('#msg-box').focus();
 

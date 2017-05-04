@@ -10,6 +10,7 @@
   /*height: 96%;*/
   padding: 20px;
   box-shadow: none;
+  background: transparent;
 }
 
 .msg {
@@ -47,6 +48,30 @@
   margin-right: 10px;
 }
 
+#room-tag {  
+    position: fixed;
+    top: 0;
+    right: 0;
+    height: 100px;
+    z-index: -9;
+    margin-right: 20px;
+    color: gray;
+    opacity: .6;
+    font-style: italic;
+}
+
+#icons a {
+  text-decoration: none;
+}
+
+#icons a > i,
+#icons span > i {
+  margin-left: 10px;
+}
+
+#copyright {
+  float: left;
+}
 
 /*Tablet view styles*/
 @media only screen and (max-width: 992px){
@@ -60,6 +85,22 @@
 
 #msg-board .panel .alert {
     max-width: 75%;
+}
+
+#icons {
+  margin-top: 10px;
+}
+
+#codename-form label {
+  text-align: center;
+}
+
+#infoModal .row > div {
+  text-align: center;
+}
+
+#copyright {
+  float: none;
 }
 
 }
