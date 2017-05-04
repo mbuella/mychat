@@ -82,6 +82,11 @@ $(function () {
         typing = false;
     });
 
+    //member leave chat request
+/*    $('#leave-chat').on('click',function(){
+        socket.emit('chat leave');
+    });*/
+
 
     /*** SOCKETS LISTENERS ***/
 
@@ -101,10 +106,12 @@ $(function () {
     //new joiners listener
     socket.on('chat intro', function(codename){
         $('#msg-board .panel').append(
-          $('<div>').addClass('text-center member-info')
-            .html($('<strong>').text(codename))
-            .append(' has joined the chat.')
-        );            
+          $('<em>').append(
+            $('<div>').addClass('text-center member-info')
+              .html($('<strong>').text(codename))
+              .append(' has joined the chat.')
+          )
+        );
     });
 
     //typing member listener
@@ -134,13 +141,26 @@ $(function () {
 
     });
 
-    //members who leave listener
-    socket.on('chat leave', function(codename){
+    //members who is disconnected listener
+    socket.on('chat disconnect', function(codename){
         $('#msg-board .panel').append(
-          $('<div>').addClass('text-center member-info')
-            .html($('<strong>').text(codename))
-            .append(' has left the chat.')
-        );            
+          $('<em>').append(
+            $('<div>').addClass('text-center member-info')
+              .html($('<strong>').text(codename))
+              .append(' has been disconnected from the chat.')
+          )
+        );
+    });
+
+    //members who leave listener
+    socket.on('chat leave', function(){
+        $('#msg-board .panel').append(
+          $('<em>').append(
+            $('<div>').addClass('text-center member-info')
+              .html($('<strong>').text(codename))
+              .append(' has left the chat.')
+          )
+        );
     });
 
 
@@ -162,10 +182,12 @@ $(function () {
 
     //greeting to the user
     $('#msg-board .panel').append(
-      $('<div>').addClass('text-center member-info')
-          .text('Welcome to the group, ')
-          .append($('<strong>').text(codename))
-          .append('!')
+      $('<em>').append(
+        $('<div>').addClass('text-center member-info')
+            .text('Welcome to the group, ')
+            .append($('<strong>').text(codename))
+            .append('!')        
+      )
     );
 
     $('#msg-box').focus();

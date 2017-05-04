@@ -20,14 +20,6 @@ io.on('connection', function(socket){
     //inform all active chatters
 	socket.broadcast.emit('chat intro', codename);
 
-    //listen for disconnects
-	socket.on('disconnect', function(){
-		console.log(users[socket.id]+' has disconnected');
-		socket.broadcast.emit('chat leave', users[socket.id]);
-		//remove the username from the users array
-		delete users[socket.id];
-	});
-
 	//chat messages
 	socket.on('chat message', function(msg){
 		console.log(users[socket.id]+': ' + msg);
@@ -39,17 +31,29 @@ io.on('connection', function(socket){
 
 	//listen for typing members
 	socket.on('chat typing', function(typing){
-		if(typing) {
-			console.log(users[socket.id]+' is typing a message.');
-		}
-		else {
-			console.log(users[socket.id]+' has stopped typing.');			
-			types = false;
-		}
 		socket.broadcast.emit('chat typing',{
 			'cn': users[socket.id],
 			'typing': typing
 		});
+	});
+
+	//listen for leave requests
+	socket.on('chat leave', function(){
+		socket.leave('chat intro');
+		console.log(users[socket.id]+' has left the chat.');
+		//inform other chatters
+		socket.broadcast.emit('chat leave', users[socket.id]);
+		//remove the username from the users array
+		delete users[socket.id];
+	});
+
+    //listen for disconnects
+	socket.on('disconnect', function(){
+		console.log(users[socket.id]+' has been disconnected from the chat.');
+		//inform other chatters
+		socket.broadcast.emit('chat disconnect', users[socket.id]);
+		//remove the username from the users array
+		delete users[socket.id];
 	});
 
   });
